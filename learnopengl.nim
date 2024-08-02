@@ -12,7 +12,7 @@ type
     id: GLuint
     index: GLuint
 
-const vertexShaderSource = staticRead("shaders/vertex.glsl")
+const vertexShaderSource = staticRead("shaders/vert.glsl")
 const fragShaderSource = staticRead("shaders/frag.glsl")
 
 proc keyProc(window: GLFWWindow, key: int32, scancode: int32, action: int32,
@@ -33,7 +33,7 @@ proc main =
   defer: glfwTerminate()
 
   glfwWindowHint(GLFWContextVersionMajor, 4)
-  glfwWindowHint(GLFWContextVersionMinor, 6)
+  glfwWindowHint(GLFWContextVersionMinor, 5)
   glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
   glfwWindowHint(GLFWResizable, GLFW_FALSE)
 
@@ -71,16 +71,20 @@ proc main =
   var x = allocCStringArray([vertexShaderSource])
   var y = allocCStringArray([fragShaderSource])
   glShaderSource(vertexShader, 1.GLsizei, x, cast[ptr GLint](0))
-  glShaderSource(fragmentShader, 1.GLsizei, x, cast[ptr GLint](0))
+  glShaderSource(fragmentShader, 1.GLsizei, y, cast[ptr GLint](0))
+  deallocCStringArray(x)
+  deallocCStringArray(y)
 
   glCompileShader(vertexShader)
   doAssert GL_TRUE == shaderObjectCompileStatus(vertexShader)
+  shaderObjectLog(vertexShader)
 
   glCompileShader(fragmentShader)
   var fragmentShaderStatus: GLint
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS,  fragmentShaderStatus.addr)
 
   doAssert GL_TRUE == fragmentShaderStatus
+  shaderObjectLog(fragmentShader)
 
   # LinkShaders
   var shaderProgram = glCreateProgram()
@@ -97,6 +101,8 @@ proc main =
     glClearBufferfv(GL_COLOR, 0.GLint, bg[0].addr)
     
     glUseProgram(shaderProgram)
+    glBindVertexArray(triangleVAO)
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     w.swapBuffers
     glfwPollEvents()
