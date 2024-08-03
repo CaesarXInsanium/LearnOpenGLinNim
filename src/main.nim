@@ -4,11 +4,9 @@ import glad/gl
 import shader
 #personal bindings to GLFW
 import glfw
-
-type
-  Texture* = object
-    id: GLuint
-    index: GLuint
+# nim
+import std/options
+import vertex
 
 const vertexShaderSource = staticRead("shaders/vert.glsl")
 const fragShaderSource = staticRead("shaders/frag.glsl")
@@ -65,42 +63,18 @@ proc main =
       0.GLsizei, cast[pointer](0))
   glEnableVertexAttribArray(0)
 
-  # Define and compile shader objects
-  var vertexShader = glCreateShader(GL_VERTEX_SHADER)
-  var fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
-  var x = allocCStringArray([vertexShaderSource])
-  var y = allocCStringArray([fragShaderSource])
-  glShaderSource(vertexShader, 1.GLsizei, x, cast[ptr GLint](0))
-  glShaderSource(fragmentShader, 1.GLsizei, y, cast[ptr GLint](0))
-  deallocCStringArray(x)
-  deallocCStringArray(y)
-
-  glCompileShader(vertexShader)
-  doAssert GL_TRUE == shaderObjectCompileStatus(vertexShader)
-  shaderObjectLog(vertexShader)
-
-  glCompileShader(fragmentShader)
-  var fragmentShaderStatus: GLint
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, fragmentShaderStatus.addr)
-
-  doAssert GL_TRUE == fragmentShaderStatus
-  shaderObjectLog(fragmentShader)
-
-  # LinkShaders
-  var shaderProgram = glCreateProgram()
-  glAttachShader(shaderProgram, vertexShader)
-  glAttachShader(shaderProgram, fragmentShader)
-  glLinkProgram(shaderProgram)
-  var shaderProgramStatus: GLint
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, shaderProgramStatus.addr)
-  # doAssert GL_TRUE == shaderProgramStatus
-  shaderProgramLog(shaderProgram)
+  var vertexShaderObj = newShaderObject(vertexShaderSource,
+      ShaderObjectType.Vertex)
+  var fragmentShaderObj = newShaderObject(fragShaderSource,
+      ShaderObjectType.Fragment)
+  var shaderProgram = programFromShaderObjects(@[get(vertexShaderObj), get(
+      fragmentShaderObj)]).get()
 
   while glfwWindowShouldClose(w) == GL_FALSE:
     var bg: array[4, GLfloat] = [0.1, 0.2, 0.3, 1.0]
     glClearBufferfv(GL_COLOR, 0.GLint, bg[0].addr)
 
-    glUseProgram(shaderProgram)
+    useShaderProgram(shaderProgram)
     glBindVertexArray(triangleVAO)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
