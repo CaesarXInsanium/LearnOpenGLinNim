@@ -8,65 +8,46 @@ type
   GLFWmonitorType = object
   GLFWmonitor = ptr GLFWMonitorType
 
-  # Function Types
-  # typedef void (* GLFWkeyfun)(GLFWwindow* window, int key,
-  #                             int scancode, int action, int mods);
   GLFWkeyfun* = proc (window: GLFWwindow, key: cint, scancode: cint,
       action: cint, mods: cint): void {.cdecl.}
-  #typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
   GLFWwindowsizefun* = proc (window: GLFWwindow, width: cint,
       height: cint): void {.cdecl.}
-  # typedef void (*GLFWglproc)(void);
   GLFWglproc* = proc (procname: cstring): void {.cdecl.}
 
 # Initiation and Temination
 
-# GLFWAPI int glfwInit(void);
 proc glfwInit*(): cint {.importc: "glfwInit", cdecl, header: "GLFW/glfw3.h".}
-# GLFWAPI void glfwTerminate(void);
 proc glfwTerminate*(): void {.importc: "glfwTerminate", cdecl,
     header: "GLFW/glfw3.h".}
 
 # GLFW Windows
 
-#GLFWAPI void glfwWindowHint(int hint, int value);
 proc glfwWindowHint*(hint: cint, value: cint): void
   {.importc: "glfwWindowHint", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title,
-#                                     GLFWmonitor* monitor, GLFWwindow* share);
 proc glfwCreateWindow*(width, height: cint, title: cstring,
     monitor: GLFWmonitor, share: GLFWWindow): GLFWwindow
   {.importc: "glfwCreateWindow", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI void glfwDestroyWindow(GLFWwindow* window);
 proc glfwDestroyWindow*(window: GLFWwindow): void
   {.importc: "glfwDestroyWindow", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI int glfwWindowShouldClose(GLFWwindow* window);
 proc glfwWindowShouldClose*(window: GLFWwindow): cint
   {.importc: "glfwWindowShouldClose", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI void glfwSetWindowShouldClose(GLFWwindow* window, int value);
 proc glfwSetWindowShouldClose*(window: GLFWwindow, value: cint)
   {.importc: "glfwSetWindowShouldClose", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI GLFWkeyfun glfwSetKeyCallback(GLFWwindow* window, GLFWkeyfun callback);
 proc glfwSetKeyCallback*(window: GLFWwindow, callback: GLFWkeyfun): GLFWKeyfun
   {.importc: "glfwSetKeyCallback", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI GLFWwindowsizefun glfwSetWindowSizeCallback(GLFWwindow* window, GLFWwindowsizefun callback);
 proc glfwSetWindowSizeCallback*(window: GLFWwindow,
     callback: GLFWwindowsizefun): GLFWwindowsizefun
   {.importc: "glfwSetWindowSizeCallback", cdecl, header: "GLFW/glfw3.h".}
-#GLFWAPI void glfwSwapBuffers(GLFWwindow* window);
 proc glfwSwapBuffers*(window: GLFWwindow): void
   {.importc: "glfwSwapBuffers", cdecl, header: "GLFW/glfw3.h".}
 
 # GL Context Management
-# GLFWAPI void glfwMakeContextCurrent(GLFWwindow* window);
 proc glfwMakeContextCurrent*(window: GLFWwindow): void
   {.importc: "glfwMakeContextCurrent", cdecl, header: "GLFW/glfw3.h".}
-# GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname);
 proc glfwGetProcAddress*(procname: cstring): GLFWglproc
   {.importc: "glfwGetProcAddress", cdecl, header: "GLFW/glfw3.h".}
 
 # GLFW Event Management
-# GLFWAPI void glfwPollEvents(void);
 proc glfwPollEvents*(): void
   {.importc: "glfwPollEvents", cdecl, header: "GLFW/glfw3.h".}
 

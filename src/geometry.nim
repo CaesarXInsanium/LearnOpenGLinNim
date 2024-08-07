@@ -3,7 +3,7 @@
 import glad/gl
 
 type
-  Geometry* = object
+  RawMeshData* = object
     vertices: seq[GLfloat]
     indices: Option[seq[GLfloat]]
 

@@ -1,6 +1,8 @@
 import glad/gl
 import std/enumerate
 
+import buffer
+
 proc asPointer[T: SomeUnsignedInt](num: T): pointer =
   return cast[pointer](num)
 
@@ -12,12 +14,10 @@ type
     pos: Vec3
     color: Vec3
     tex: Vec2
-  VertexBuffer = ref object
-    id: GLuint
-  VertexArray = ref object
+  VertexDesc* = ref object
     id: GLuint
   VertexDescEntry* = object
-    vbo: VertexBuffer
+    buffer: GPUBuffer
     valueCount: GLint
     dataType: GLenum
 
@@ -27,21 +27,33 @@ proc glTypeSize(t: GLenum): int =
     of GL_UNSIGNED_INT: return sizeof(GLuint)
     else: raise newException(Exception, "Undeclared Type: Check glTypeSize")
 
-proc vertexDescribeGL(vao: VertexArray, entries: seq[VertexDescEntry]) =
+proc newVertexDesc*(): VertexDesc =
+  var id: GLuint
+  glGenVertexArrays(1, id.addr)
+  return VertexDesc(id: id)
+
+proc newVertexDescEntry*(buffer: GPUBuffer, count: GLint, dataType: GLenum): VertexDescEntry =
+  return VertexDescEntry(buffer: buffer, valueCount: count, dataType: dataTYpe)
+
+proc vertexDescribeGL*(vao: VertexDesc, entries: seq[VertexDescEntry]) =
   glBindVertexArray(vao.id)
   const vertexStride = sizeof(Vertex)
   var offset = 0
   for i, entry in enumerate(entries):
+    bindBuffer(entry.buffer)
     glVertexAttribPointer(i.GLuint, entry.valueCount, entry.dataType,
       GL_FALSE.GLboolean, vertexStride.GLsizei, asPointer(0))
     glEnableVertexAttribArray(i.GLuint)
     offset = offset + (entry.valueCount * glTypeSize(entry.dataType))
+    glEnableVertexAttribArray(i.GLuint)
+    bindBuffer(nil)
+  glBindVertexArray(0)
 
-proc describeVertex(buffer: VertexBuffer, vao: VertexArray) =
+proc describeVertex(buffer: GPUBuffer, vao: VertexDesc) =
   var entries = @[
-    VertexDescEntry(vbo: buffer, valueCount: 3.GLint, dataType: cGL_FLOAT),
-    VertexDescEntry(vbo: buffer, valueCount: 3.GLint, dataType: cGL_FLOAT),
-    VertexDescEntry(vbo: buffer, valueCount: 2.GLint, dataType: cGL_FLOAT),
+    VertexDescEntry(buffer: buffer, valueCount: 3.GLint, dataType: cGL_FLOAT),
+    VertexDescEntry(buffer: buffer, valueCount: 3.GLint, dataType: cGL_FLOAT),
+    VertexDescEntry(buffer: buffer, valueCount: 2.GLint, dataType: cGL_FLOAT),
   ]
   vertexDescribeGL(vao, entries)
 
