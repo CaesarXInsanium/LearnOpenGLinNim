@@ -4,9 +4,6 @@ import glad/gl
 #personal bindings to GLFW
 import glfw
 import shader
-import vertex
-import buffer
-import pipeline
 
 # nim
 import std/options
@@ -35,7 +32,7 @@ proc main =
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6)
   glfwWindowHint(GLFW_REFRESH_RATE, 60)
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE)
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
 
   let w: GLFWWindow = glfwCreateWindow(800, 600, cstring("NimGL"), nil, nil)
@@ -48,51 +45,50 @@ proc main =
   doAssert gladLoadGL(glfwGetProcAddress)
   # OpenGL code
   glEnable(GL_BLEND)
-  glEnable(GL_DEPTH_TEST)
+  # glEnable(GL_DEPTH_TEST)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
   var vertices: seq[GLfloat] = @[-0.5, 0.0, 0.5, 0.0, 0.0, 0.5]
   var indices: seq[GLuint] = @[0, 1, 2]
 
   # upload vertices to buffer
-  var triangleBuffer: GLuint
-  glCreateBuffers(1, triangleBuffer.addr)
-  var size: GLsizeiptr = cast[GLsizeiptr](vertices.len() * sizeof(GLfloat))
-  glNamedBufferStorage(triangleBuffer, size, vertices[0].addr().pointer, 0.GLBitfield)
-
-  var triangleBuffer2 = newGPUBuffer[GLfloat](GPUUsageType.Vertices, vertices)
-  var indicesBuffer2 = newGPUBuffer[GLuint](GPUUsageType.Indices, indices)
-
-  var triangleDesc = newVertexDesc()
-  var entries = @[
-    newVertexDescEntry( triangleBuffer2, 2.GLint, cGL_FLOAT),
-  ]
-  vertexDescribeGL(triangleDesc, entries)
-  # vertex description
   var triangleVAO: GLuint
   glGenVertexArrays(1, triangleVAO.addr)
   glBindVertexArray(triangleVAO)
+
+  var triangleBuffer: GLuint
+  glCreateBuffers(1, triangleBuffer.addr)
+  var size: GLsizeiptr = cast[GLsizeiptr](vertices.len() * sizeof(GLfloat))
+
+  # vertex description
   glBindBuffer(GL_ARRAY_BUFFER, triangleBuffer)
-  glVertexAttribPointer(0.GLuint, 2.GLint, cGL_FLOAT, GL_FALSE.GLboolean,
-      0.GLsizei, cast[pointer](0))
+  glNamedBufferStorage(triangleBuffer, size, vertices[0].addr().pointer, 0.GLBitfield)
+  glVertexAttribPointer(index= 0.GLuint, 
+                        size = 2.GLint,
+                        `type` = cGL_FLOAT, 
+                        normalized= GL_FALSE.GLboolean,
+                        stride = (sizeof(GLfloat) * 2).GLsizei,
+                        `pointer` = cast[pointer](0))
   glEnableVertexAttribArray(0)
 
   var vertexShaderObj = newShaderObject(vertexShaderSource,
       ShaderObjectType.Vertex)
   var fragmentShaderObj = newShaderObject(fragShaderSource,
       ShaderObjectType.Fragment)
-  var shaderProgram = programFromShaderObjects(@[get(vertexShaderObj), get(
-      fragmentShaderObj)]).get()
-
-  var trianglePipeline = newPipeline(shaderProgram, triangleDesc, DrawMode.GL_TRIANGLES)
+  var shaderProgram = programFromShaderObjects(
+    @[
+      get(vertexShaderObj), 
+      get(fragmentShaderObj)
+     ]).get()
 
   while glfwWindowShouldClose(w) == GL_FALSE:
     var bg: array[4, GLfloat] = [0.1, 0.2, 0.3, 1.0]
     glClearBufferfv(GL_COLOR, 0.GLint, bg[0].addr)
+    glClear(GL_DEPTH_BUFFER_BIT)
 
-    useShaderProgram(shaderProgram)
     glBindVertexArray(triangleVAO)
     glBindBuffer(GL_ARRAY_BUFFER, triangleBuffer)
+    useShaderProgram(shaderProgram)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glfwSwapBuffers(w)

@@ -6,7 +6,10 @@ NIMFLAGS= --debugger:native \
 					--app:gui \
 					--path:$(SOURCE_DIR) \
 					--nanchecks:on \
-					--outdir:bin
+					--outdir:bin \
+					--skipParentCfg \
+					--skipProjCfg \
+					--skipUserCfg
 TARGET=bin/learngl
 ENTRY=main.nim
 
