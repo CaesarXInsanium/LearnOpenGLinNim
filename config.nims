@@ -1,0 +1,9 @@
+--debugger:native
+--clib:glfw
+--app:gui
+--path:src
+--nanchecks:on
+--outdir:bin
+--skipParentCfg
+--skipProjCfg
+--skipUserCfg

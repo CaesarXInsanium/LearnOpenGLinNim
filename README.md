@@ -9,6 +9,8 @@ of the OpenGL tutorial by Joey de Vries.
 
 I got to a point in which I can draw a simple blue triangle.
 
+New Update, this project breaks with GCC 14,13. 12 is fine
+
 ## TODO
 
 - [x] drop nimGL
